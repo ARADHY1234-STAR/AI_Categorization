@@ -1,0 +1,62 @@
+{
+  "mappings": {
+    "Communication": "Communication",
+    "Email": "Communication",
+    "Messaging": "Communication",
+    "Video Conferencing": "Communication",
+    "Collaboration / Team Chat": "Communication",
+    
+    "Social Media": "Social Media",
+    "Social Media / Professional Networking": "Social Media",
+    "Social Networking": "Social Media",
+    "Discussion Forums": "Social Media",
+    "Microblogging": "Social Media",
+    
+    "Productivity & Office": "Productivity & Office",
+    "Productivity": "Productivity & Office",
+    "Office Suite": "Productivity & Office",
+    "Document Management": "Productivity & Office",
+    "Task / Project Management": "Productivity & Office",
+    "Notes & Knowledge Base": "Productivity & Office",
+    
+    "Development & IT": "Development & IT",
+    "Software Development": "Development & IT",
+    "DevOps & Infrastructure": "Development & IT",
+    "Version Control": "Development & IT",
+    "API & Cloud Services": "Development & IT",
+    
+    "Business & Enterprise": "Business & Enterprise",
+    "CRM / ERP": "Business & Enterprise",
+    "HRMS & Payroll": "Business & Enterprise",
+    "Customer Support / Ticketing": "Business & Enterprise",
+    "Accounting & Finance": "Business & Enterprise",
+    
+    "Research & Learning": "Research & Learning",
+    "Search Engine": "Research & Learning",
+    "Reference / Encyclopedia": "Research & Learning",
+    "Education / E-Learning": "Research & Learning",
+    "Technical Documentation": "Research & Learning",
+    
+    "Entertainment & Media": "Entertainment & Media",
+    "Video Streaming": "Entertainment & Media",
+    "Music Streaming": "Entertainment & Media",
+    "Gaming": "Entertainment & Media",
+    "News & Media": "Entertainment & Media",
+    
+    "Shopping & E-commerce": "Shopping & E-commerce",
+    "E-commerce": "Shopping & E-commerce",
+    "Online Marketplace": "Shopping & E-commerce",
+    "Travel & Booking": "Shopping & E-commerce",
+    "Food Delivery": "Shopping & E-commerce",
+    
+    "System Utilities & Security": "System Utilities & Security",
+    "Security & Antivirus": "System Utilities & Security",
+    "VPN & Privacy": "System Utilities & Security",
+    "System Maintenance": "System Utilities & Security",
+    
+    "File Storage & Data Sharing": "File Storage & Data Sharing",
+    "Cloud Storage": "File Storage & Data Sharing",
+    "File Transfer": "File Storage & Data Sharing",
+    "Document Repository": "File Storage & Data Sharing"
+  }
+}

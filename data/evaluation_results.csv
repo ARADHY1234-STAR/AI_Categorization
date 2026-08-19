@@ -1,0 +1,31 @@
+index,website,url,domain,raw_expected,mapped_expected,ai_assigned_category,confidence,source,eval_status,rule_applied,reason
+1,YouTube,https://www.youtube.com,youtube.com,Video Streaming,Entertainment & Media,Entertainment & Media,1.00,database,MATCH,Seed Dataset / Locked Rules,"Produced video & multimedia consumption (TB2, F1)"
+2,Google Docs,https://docs.google.com/document,docs.google.com,Office Suite,Productivity & Office,Productivity & Office,1.00,database,MATCH,Seed Dataset / Locked Rules,"Document editing application (TB5, TB6)"
+3,Google Drive,https://drive.google.com/drive,drive.google.com,Cloud Storage,File Storage & Data Sharing,File Storage & Data Sharing,1.00,database,MATCH,Seed Dataset / Locked Rules,"Cloud storage & file sync repository (TB6, TB8)"
+4,Discord,https://discord.com,discord.com,Messaging,Communication,Communication,1.00,database,MATCH,Seed Dataset / Locked Rules,"Core product is private/group messaging (TB1, F1)"
+5,Slack,https://slack.com,slack.com,Collaboration / Team Chat,Communication,Communication,1.00,database,MATCH,Seed Dataset / Locked Rules,Team collaboration & messaging platform (TB3)
+6,GitHub,https://github.com,github.com,Version Control,Development & IT,Development & IT,1.00,database,MATCH,Seed Dataset / Locked Rules,Source code hosting & version control
+7,Reddit,https://reddit.com,reddit.com,Discussion Forums,Social Media,Social Media,1.00,database,MATCH,Seed Dataset / Locked Rules,Discussion forum & social content platform (TB4)
+8,Salesforce,https://salesforce.com,salesforce.com,CRM / ERP,Business & Enterprise,Business & Enterprise,1.00,database,MATCH,Seed Dataset / Locked Rules,"Enterprise CRM platform (TB3, TB5)"
+9,Workday,https://workday.com,workday.com,HRMS & Payroll,Business & Enterprise,Business & Enterprise,1.00,database,MATCH,Seed Dataset / Locked Rules,Enterprise HRMS & financial management (TB5)
+10,Wikipedia,https://wikipedia.org,wikipedia.org,Reference / Encyclopedia,Research & Learning,Research & Learning,1.00,database,MATCH,Seed Dataset / Locked Rules,Free digital encyclopedia and reference library
+11,Coursera,https://coursera.org,coursera.org,Education / E-Learning,Research & Learning,Research & Learning,1.00,database,MATCH,Seed Dataset / Locked Rules,Online course platform & education
+12,Amazon,https://amazon.com,amazon.com,Online Marketplace,Shopping & E-commerce,Shopping & E-commerce,1.00,database,MATCH,Seed Dataset / Locked Rules,Online retail marketplace & consumer purchasing
+13,Dropbox,https://dropbox.com,dropbox.com,Cloud Storage,File Storage & Data Sharing,File Storage & Data Sharing,1.00,database,MATCH,Seed Dataset / Locked Rules,Cloud file storage & syncing (TB8)
+14,OneDrive,https://onedrive.live.com,onedrive.live.com,Cloud Storage,File Storage & Data Sharing,File Storage & Data Sharing,1.00,database,MATCH,Seed Dataset / Locked Rules,"Cloud storage & file backup (TB6, TB8)"
+15,Zoom,https://zoom.us,zoom.us,Video Conferencing,Communication,Communication,1.00,database,MATCH,Seed Dataset / Locked Rules,Video conferencing & messaging (TB3)
+16,Telegram,https://telegram.org,telegram.org,Messaging,Communication,Communication,1.00,database,MATCH,Seed Dataset / Locked Rules,"Core product is messaging (TB1, F1)"
+17,WhatsApp,https://whatsapp.com,whatsapp.com,Messaging,Communication,Communication,1.00,database,MATCH,Seed Dataset / Locked Rules,"Core product is messaging (TB1, F1)"
+18,Postman,https://postman.com,postman.com,API & Cloud Services,Development & IT,Development & IT,1.00,database,MATCH,Seed Dataset / Locked Rules,API development and testing platform
+19,Docker,https://docker.com,docker.com,DevOps & Infrastructure,Development & IT,Development & IT,1.00,database,MATCH,Seed Dataset / Locked Rules,Containerization platform & registry
+20,Trello,https://trello.com,trello.com,Task / Project Management,Productivity & Office,Productivity & Office,1.00,database,MATCH,Seed Dataset / Locked Rules,Project & task planning board (TB7)
+21,Asana,https://asana.com,asana.com,Task / Project Management,Productivity & Office,Productivity & Office,1.00,database,MATCH,Seed Dataset / Locked Rules,Project & task management tool (TB7)
+22,Notion,https://notion.so,notion.so,Notes & Knowledge Base,Productivity & Office,Productivity & Office,1.00,database,MATCH,Seed Dataset / Locked Rules,"Notes, docs, and knowledge workspace (TB5)"
+23,Airtable,https://airtable.com,airtable.com,Office Suite,Productivity & Office,Productivity & Office,1.00,database,MATCH,Seed Dataset / Locked Rules,Spreadsheet-database workspace (TB5)
+24,Speedtest,https://speedtest.net,speedtest.net,System Maintenance,System Utilities & Security,System Utilities & Security,1.00,database,MATCH,Seed Dataset / Locked Rules,Network diagnostics & speed testing utility
+25,Malwarebytes,https://malwarebytes.com,malwarebytes.com,Security & Antivirus,System Utilities & Security,System Utilities & Security,1.00,database,MATCH,Seed Dataset / Locked Rules,Antivirus & system security utility
+26,Twitch,https://twitch.tv,twitch.tv,Video Streaming,Entertainment & Media,Entertainment & Media,1.00,database,MATCH,Seed Dataset / Locked Rules,Live streaming video platform (TB2)
+27,Netflix,https://netflix.com,netflix.com,Video Streaming,Entertainment & Media,Entertainment & Media,1.00,database,MATCH,Seed Dataset / Locked Rules,Subscription streaming entertainment
+28,Spotify,https://spotify.com,spotify.com,Music Streaming,Entertainment & Media,Entertainment & Media,1.00,database,MATCH,Seed Dataset / Locked Rules,Audio & music streaming platform
+29,eBay,https://ebay.com,ebay.com,Online Marketplace,Shopping & E-commerce,Shopping & E-commerce,1.00,database,MATCH,Seed Dataset / Locked Rules,Online marketplace & auction platform
+30,Shopify,https://shopify.com,shopify.com,E-commerce,Shopping & E-commerce,Shopping & E-commerce,1.00,database,MATCH,Seed Dataset / Locked Rules,E-commerce platform and merchant tools

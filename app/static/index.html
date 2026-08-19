@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain Categorization AI — Classification & Governance Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <a href="/" class="nav-brand">
+      <div class="brand-icon">🌐</div>
+      <div class="brand-text">
+        <h1>Domain Categorization AI</h1>
+        <span>Hierarchical Classifier</span>
+      </div>
+    </a>
+    <div class="nav-meta">
+      <button type="button" id="btn-seed-data" class="docs-link" style="cursor: pointer; background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.35); color: #c7d2fe;">
+        <span>🌱</span> Seed Default Dataset
+      </button>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span id="service-status-text">Backend Active</span>
+      </div>
+      <a href="/docs" target="_blank" class="docs-link" id="api-docs-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Swagger API
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-header">
+      <button class="tab-btn active" data-tab="tab-playground" id="tab-btn-playground">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+        Live Classifier
+      </button>
+      <button class="tab-btn" data-tab="tab-batch" id="tab-btn-batch">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+        Bulk Batch Tester
+      </button>
+      <button class="tab-btn" data-tab="tab-categories" id="tab-btn-categories">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        10 Fixed Categories
+      </button>
+      <button class="tab-btn" data-tab="tab-rules" id="tab-btn-rules">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Locked Rules (F1, TB1–TB8)
+      </button>
+      <button class="tab-btn" data-tab="tab-database" id="tab-btn-database">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+        Database Records
+      </button>
+      <button class="tab-btn" data-tab="tab-override" id="tab-btn-override">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Human Override
+      </button>
+    </div>
+
+    <!-- TAB 1: Real-Time Playground -->
+    <section id="tab-playground" class="tab-content active">
+      <div class="playground-grid">
+        
+        <!-- Left: Input Form Card -->
+        <div class="glass-panel">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span>🎯</span> Classify Domain / Subdomain
+              </div>
+              <div class="card-subtitle">Test real-time hierarchical normalization & classification</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="classify-form">
+              <div class="form-group">
+                <label class="form-label" for="domain-input">Website Domain or URL</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🔗</span>
+                  <input type="text" id="domain-input" class="form-input" placeholder="e.g. https://docs.google.com/document/d/123" required autocomplete="off">
+                </div>
+                
+                <!-- Quick Test Pills -->
+                <div class="quick-pills">
+                  <span class="pill-label">Examples:</span>
+                  <button type="button" class="pill-btn" data-fill="https://www.youtube.com/watch?v=123" data-app="YouTube">YouTube</button>
+                  <button type="button" class="pill-btn" data-fill="https://docs.google.com/document/d/1" data-app="Google Docs">Google Docs (TB6)</button>
+                  <button type="button" class="pill-btn" data-fill="https://drive.google.com/drive/u/0" data-app="Google Drive">Google Drive (TB6)</button>
+                  <button type="button" class="pill-btn" data-fill="discord.com" data-app="Discord">Discord (TB1)</button>
+                  <button type="button" class="pill-btn" data-fill="https://reddit.com/r/technology" data-app="Reddit">Reddit (TB4)</button>
+                  <button type="button" class="pill-btn" data-fill="https://github.com/torvalds/linux" data-app="GitHub">GitHub</button>
+                  <button type="button" class="pill-btn" data-fill="salesforce.com" data-app="Salesforce">Salesforce (TB5)</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="subdomain-input">Explicit Subdomain (Optional)</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🏷️</span>
+                  <input type="text" id="subdomain-input" class="form-input" placeholder="e.g. docs, drive, mail">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="app-name-input">Application / Site Name (Optional)</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">💼</span>
+                  <input type="text" id="app-name-input" class="form-input" placeholder="e.g. Google Docs">
+                </div>
+              </div>
+
+              <button type="submit" id="btn-classify" class="btn-primary">
+                <span id="btn-spinner" class="spinner" style="display: none;"></span>
+                <span id="btn-text">Classify Domain</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Classification Result Card -->
+        <div class="glass-panel">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span>📊</span> Classification Result
+              </div>
+              <div class="card-subtitle">Real-time pipeline outcome and metadata</div>
+            </div>
+            <span id="result-status-badge" class="status-badge" style="display: none;">CLASSIFIED</span>
+          </div>
+
+          <div class="card-body">
+            <!-- Empty State Placeholder -->
+            <div id="result-placeholder" class="result-placeholder">
+              <div class="result-placeholder-icon">⚡</div>
+              <p>Enter a domain or click an example on the left to trigger the classification pipeline.</p>
+            </div>
+
+            <!-- Active Result Container -->
+            <div id="result-container" class="result-container">
+              
+              <!-- Hero Category Block -->
+              <div id="result-hero" class="category-hero">
+                <div class="category-header-top">
+                  <span id="res-cat-id" class="cat-id-pill">Category ID: #7</span>
+                  <span id="res-source" class="source-pill source-database">Database Cache</span>
+                </div>
+                <div id="res-category-name" class="category-name-display">Entertainment & Media</div>
+                <div id="res-domain-name" class="domain-display">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  <span>youtube.com</span>
+                </div>
+
+                <div class="confidence-meter">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                    <span>Confidence Score</span>
+                    <strong id="res-confidence-text" style="color: var(--text-primary);">1.00 (100%)</strong>
+                  </div>
+                  <div class="confidence-bar-bg">
+                    <div id="res-confidence-bar" class="confidence-bar-fill" style="width: 100%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metadata Grid -->
+              <div class="meta-tags-grid">
+                <div class="meta-box">
+                  <div class="meta-box-label">Rule / Policy Applied</div>
+                  <div id="res-rule-applied" class="meta-box-value">F1 / Brand Override</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">HTTP Enrichment</div>
+                  <div id="res-enrichment-used" class="meta-box-value">No (Bypassed)</div>
+                </div>
+                <div class="meta-box">
+                  <div class="meta-box-label">Subdomain Split</div>
+                  <div id="res-subdomain-split" class="meta-box-value">None (Root)</div>
+                </div>
+              </div>
+
+              <!-- Reason Box -->
+              <div class="reason-box">
+                <strong>Reasoning: </strong>
+                <span id="res-reason">Core content unit is produced video (TB2, F1)</span>
+              </div>
+
+              <!-- Scraped Evidence Accordion (If Enriched) -->
+              <details id="evidence-accordion" class="evidence-details" style="display: none;">
+                <summary>🔍 Extracted Web Evidence (Enrichment)</summary>
+                <div class="evidence-content" id="evidence-content-body">
+                  <!-- Populated dynamically -->
+                </div>
+              </details>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: Bulk Batch Tester -->
+    <section id="tab-batch" class="tab-content">
+      <div class="glass-panel">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span>📦</span> High-Throughput Batch Deduplication Tester</div>
+            <div class="card-subtitle">Paste multiple domains or URLs (one per line) to test pre-classification deduplication</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <textarea id="batch-input" class="batch-textarea" placeholder="https://www.youtube.com/watch?v=1
+https://www.youtube.com/watch?v=2
+youtube.com
+https://docs.google.com/document/d/1
+https://drive.google.com/drive/u/0
+discord.com
+telegram.org
+https://github.com/torvalds/linux
+salesforce.com"></textarea>
+
+          <button type="button" id="btn-run-batch" class="btn-primary" style="width: auto; padding: 0.75rem 1.75rem;">
+            <span id="batch-spinner" class="spinner" style="display: none;"></span>
+            <span>Process Batch with Deduplication</span>
+          </button>
+
+          <div id="batch-summary-box" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: var(--radius-md);">
+            <div style="font-weight: 700; color: #c7d2fe; margin-bottom: 0.25rem;">Batch Processing Metrics</div>
+            <div id="batch-metrics-text" style="font-size: 0.85rem; color: var(--text-secondary);"></div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="batch-results-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Normalized FQDN</th>
+                  <th>Subdomain</th>
+                  <th>Category</th>
+                  <th>ID</th>
+                  <th>Confidence</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="batch-table-body">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No batch items processed yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: 10 Fixed Categories Reference -->
+    <section id="tab-categories" class="tab-content">
+      <div class="categories-grid" id="categories-grid-container">
+        <!-- Rendered dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 4: Locked Rules Engine -->
+    <section id="tab-rules" class="tab-content">
+      <div class="glass-panel">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span>🛡️</span> Locked Business Rules & Tie-Breakers (F1, TB1–TB8)</div>
+            <div class="card-subtitle">Auditable, versioned rules injected into the classification pipeline</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="rules-list" id="rules-list-container">
+            <!-- Rendered dynamically via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: Human Override -->
+    <section id="tab-override" class="tab-content">
+      <div class="glass-panel" style="max-width: 650px; margin: 0 auto;">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span>👤</span> Create Human Override Record</div>
+            <div class="card-subtitle">Set an immutable classification that cannot be overwritten by AI</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <form id="override-form">
+            <div class="form-group">
+              <label class="form-label" for="override-domain">Domain or URL</label>
+              <input type="text" id="override-domain" class="form-input" placeholder="e.g. internal-tool.mycompany.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="override-category">Select One of the 10 Categories</label>
+              <select id="override-category" class="form-input" style="padding-left: 1rem;" required>
+                <option value="">-- Choose Category --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="override-reason">Audit / Reviewer Reason</label>
+              <input type="text" id="override-reason" class="form-input" value="Manually verified by human compliance reviewer" style="padding-left: 1rem;" required>
+            </div>
+            <button type="submit" id="btn-save-override" class="btn-primary">
+              <span id="override-spinner" class="spinner" style="display: none;"></span>
+              <span>Save Protected Human Override</span>
+            </button>
+          </form>
+          <div id="override-alert" style="display: none; margin-top: 1rem; padding: 0.85rem; border-radius: var(--radius-sm); font-size: 0.85rem;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: Stored Database Records -->
+    <section id="tab-database" class="tab-content">
+      <div class="glass-panel">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span>💾</span> Stored Domain Classifications (Database Table)</div>
+            <div class="card-subtitle">Active SQLite cache and human overrides (File: data/domains.db)</div>
+          </div>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <input type="text" id="db-search-input" class="form-input" placeholder="Search domains or categories..." style="width: 260px; padding: 0.45rem 0.85rem; font-size: 0.85rem;">
+            <button type="button" id="btn-refresh-db" class="pill-btn" style="padding: 0.45rem 0.85rem; font-size: 0.85rem;">🔄 Refresh</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="data-table" id="db-records-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Domain (FQDN)</th>
+                  <th>Subdomain</th>
+                  <th>Category</th>
+                  <th>Conf</th>
+                  <th>Source</th>
+                  <th>Rule</th>
+                  <th>Status</th>
+                  <th>Reason</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="db-table-body">
+                <tr>
+                  <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading stored records...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="db-total-count" style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

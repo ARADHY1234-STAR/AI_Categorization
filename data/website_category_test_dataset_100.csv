@@ -1,0 +1,31 @@
+Website,URL,Expected_Category
+YouTube,https://www.youtube.com,Video Streaming
+Google Docs,https://docs.google.com/document,Office Suite
+Google Drive,https://drive.google.com/drive,Cloud Storage
+Discord,https://discord.com,Messaging
+Slack,https://slack.com,Collaboration / Team Chat
+GitHub,https://github.com,Version Control
+Reddit,https://reddit.com,Discussion Forums
+Salesforce,https://salesforce.com,CRM / ERP
+Workday,https://workday.com,HRMS & Payroll
+Wikipedia,https://wikipedia.org,Reference / Encyclopedia
+Coursera,https://coursera.org,Education / E-Learning
+Amazon,https://amazon.com,Online Marketplace
+Dropbox,https://dropbox.com,Cloud Storage
+OneDrive,https://onedrive.live.com,Cloud Storage
+Zoom,https://zoom.us,Video Conferencing
+Telegram,https://telegram.org,Messaging
+WhatsApp,https://whatsapp.com,Messaging
+Postman,https://postman.com,API & Cloud Services
+Docker,https://docker.com,DevOps & Infrastructure
+Trello,https://trello.com,Task / Project Management
+Asana,https://asana.com,Task / Project Management
+Notion,https://notion.so,Notes & Knowledge Base
+Airtable,https://airtable.com,Office Suite
+Speedtest,https://speedtest.net,System Maintenance
+Malwarebytes,https://malwarebytes.com,Security & Antivirus
+Twitch,https://twitch.tv,Video Streaming
+Netflix,https://netflix.com,Video Streaming
+Spotify,https://spotify.com,Music Streaming
+eBay,https://ebay.com,Online Marketplace
+Shopify,https://shopify.com,E-commerce

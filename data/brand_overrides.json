@@ -1,0 +1,24 @@
+{
+  "overrides": [
+    {
+      "domain": "discord.com",
+      "category": "Communication",
+      "reason": "Core product is voice/text messaging and community servers (TB1, F1)"
+    },
+    {
+      "domain": "telegram.org",
+      "category": "Communication",
+      "reason": "Core product is private and group messaging (TB1, F1)"
+    },
+    {
+      "domain": "whatsapp.com",
+      "category": "Communication",
+      "reason": "Core product is direct messaging and calls (TB1, F1)"
+    },
+    {
+      "domain": "youtube.com",
+      "category": "Entertainment & Media",
+      "reason": "Core content unit is produced video (TB2, F1)"
+    }
+  ]
+}

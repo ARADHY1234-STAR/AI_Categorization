@@ -1,0 +1,37 @@
+{
+  "meaningful_subdomains": [
+    "docs",
+    "drive",
+    "sheets",
+    "slides",
+    "forms",
+    "mail",
+    "calendar",
+    "meet",
+    "teams",
+    "onedrive",
+    "outlook",
+    "sharepoint",
+    "workspace",
+    "portal",
+    "app",
+    "dashboard",
+    "admin",
+    "console",
+    "api",
+    "dev",
+    "cloud"
+  ],
+  "default_collapsed_subdomains": [
+    "www",
+    "www1",
+    "www2",
+    "www3",
+    "m",
+    "mobile",
+    "web",
+    "en",
+    "us",
+    "global"
+  ]
+}
