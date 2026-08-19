@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///data/domains.db"
 
     # HTTP Enrichment Controls
-    ENRICHMENT_TIMEOUT_SECONDS: float = 5.0
+    ENRICHMENT_TIMEOUT_SECONDS: float = 8.0
     ENRICHMENT_MAX_RESPONSE_BYTES: int = 524288  # 512 KB
     ENRICHMENT_MAX_REDIRECTS: int = 3
     ENRICHMENT_USER_AGENT: str = (

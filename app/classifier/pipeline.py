@@ -183,6 +183,7 @@ class DomainClassificationPipeline:
                         logger.info(
                             f"Domain '{norm.fqdn}' has no meaningful content and confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Returning UNCLASSIFIED (No Category Found)."
                         )
+                        unclass_reason = llm_output.reason or f"Needs Review - Confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. The domain failed to resolve and returned no metadata or identifiable content, making it impossible to determine its function."
                         return ClassificationResponse(
                             original_url=raw_input,
                             domain=norm.fqdn,
@@ -192,8 +193,8 @@ class DomainClassificationPipeline:
                             confidence=llm_output.confidence,
                             status=ClassificationStatus.UNCLASSIFIED.value,
                             source=ClassificationSource.LLM_CATEGORIZER.value,
-                            rule_applied="unresolvable_or_no_metadata",
-                            reason=f"Needs Review - Confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. The domain failed to resolve and returned no metadata or identifiable content, making it impossible to determine its function.",
+                            rule_applied=llm_output.rule_applied or "unclassifiable",
+                            reason=unclass_reason,
                             enrichment_used=True,
                             final_url=fetch_result.final_url,
                             http_status=fetch_result.http_status,
