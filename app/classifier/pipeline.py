@@ -183,7 +183,12 @@ class DomainClassificationPipeline:
                         logger.info(
                             f"Domain '{norm.fqdn}' has no meaningful content and confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Returning UNCLASSIFIED (No Category Found)."
                         )
-                        unclass_reason = llm_output.reason or f"Needs Review - Confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. The domain failed to resolve and returned no metadata or identifiable content, making it impossible to determine its function."
+                        fallback_msg = (
+                            "The domain timed out and returned no identifiable content or metadata, making classification impossible."
+                            if fetch_result.fetch_status == FetchStatus.TIMEOUT
+                            else "The domain failed to resolve and returned no identifiable content or metadata, making classification impossible."
+                        )
+                        unclass_reason = llm_output.reason or fallback_msg
                         return ClassificationResponse(
                             original_url=raw_input,
                             domain=norm.fqdn,
@@ -224,7 +229,7 @@ class DomainClassificationPipeline:
                             status=status_res,
                             source=ClassificationSource.LLM_CATEGORIZER.value,
                             rule_applied=llm_output.rule_applied or "low_confidence_review",
-                            reason=f"[Needs Review - Confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}] {llm_output.reason or ''}".strip(),
+                            reason=llm_output.reason or f"Low confidence ({llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}) requiring human review.",
                             enrichment_used=True,
                             final_url=fetch_result.final_url,
                             http_status=fetch_result.http_status,
@@ -257,10 +262,12 @@ class DomainClassificationPipeline:
 
                 # Fallback / Unclassifiable (No category, unresolvable, or error) - Do NOT save to DB
                 logger.warning(f"Could not classify '{norm.fqdn}'. Returning UNCLASSIFIED without saving to DB.")
-                fail_reason = (
-                    llm_output.reason if (llm_output and llm_output.reason)
-                    else "Needs Review - Confidence 0.00 < 0.8. The domain failed to resolve and returned no metadata or identifiable content, making it impossible to determine its function."
+                default_msg = (
+                    "The domain timed out and returned no identifiable content or metadata, making classification impossible."
+                    if fetch_result.fetch_status == FetchStatus.TIMEOUT
+                    else "The domain failed to resolve and returned no identifiable content or metadata, making classification impossible."
                 )
+                fail_reason = (llm_output.reason if (llm_output and llm_output.reason) else default_msg)
                 return ClassificationResponse(
                     original_url=raw_input,
                     domain=norm.fqdn,
