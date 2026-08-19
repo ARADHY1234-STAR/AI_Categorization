@@ -528,14 +528,12 @@ with tab_play:
 
     with col_input:
         st.markdown(
-            """
-            <div class="glass-card-header" style="margin-bottom: 0.75rem;">
-              <div>
-                <div class="glass-card-title"><span>🎯</span> Classify Domain / Subdomain</div>
-                <div class="glass-card-subtitle">Real-time normalization, HTTP enrichment, and LLM rule reasoning</div>
-              </div>
-            </div>
-            """,
+            """<div class="glass-card-header" style="margin-bottom: 0.75rem;">
+<div>
+<div class="glass-card-title"><span>🎯</span> Classify Domain / Subdomain</div>
+<div class="glass-card-subtitle">Real-time normalization, HTTP enrichment, and LLM rule reasoning</div>
+</div>
+</div>""",
             unsafe_allow_html=True,
         )
 
@@ -579,14 +577,12 @@ with tab_play:
 
     with col_result:
         st.markdown(
-            """
-            <div class="glass-card-header" style="margin-bottom: 0.75rem;">
-              <div>
-                <div class="glass-card-title"><span>📊</span> Classification Result</div>
-                <div class="glass-card-subtitle">Real-time pipeline outcome and metadata</div>
-              </div>
-            </div>
-            """,
+            """<div class="glass-card-header" style="margin-bottom: 0.75rem;">
+<div>
+<div class="glass-card-title"><span>📊</span> Classification Result</div>
+<div class="glass-card-subtitle">Real-time pipeline outcome and metadata</div>
+</div>
+</div>""",
             unsafe_allow_html=True,
         )
 
@@ -637,53 +633,49 @@ with tab_play:
                     conf_pct = int(res.confidence * 100)
                     src_class = f"source-{res.source}"
 
-                    # Render Category Hero Box
-                    st.markdown(
-                        f"""
-                        <div class="category-hero">
-                          <div class="category-hero-bar" style="background: {color}; box-shadow: 0 0 12px {color};"></div>
-                          <div class="category-header-top">
-                            <span class="cat-id-pill">{cat_id_display}</span>
-                            <span class="source-pill {src_class}" style="{status_pill_style}">{status_badge_text}</span>
-                          </div>
-                          {cat_display_html}
-                          <div class="domain-display">
-                            <span>🌐</span>
-                            <span>{html.escape(res.domain)}</span>
-                          </div>
-                          <div class="confidence-meter">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #9ca3af;">
-                              <span>Confidence Score</span>
-                              <strong style="color: #f9fafb;">{res.confidence:.2f} ({conf_pct}%)</strong>
-                            </div>
-                            <div class="confidence-bar-bg">
-                              <div class="confidence-bar-fill" style="width: {conf_pct}%;"></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div class="meta-tags-grid">
-                          <div class="meta-box">
-                            <div class="meta-box-label">Rule Applied</div>
-                            <div class="meta-box-value">{html.escape(res.rule_applied or ('unclassifiable' if is_unclassified else 'F1 / General'))}</div>
-                          </div>
-                          <div class="meta-box">
-                            <div class="meta-box-label">HTTP Enrichment</div>
-                            <div class="meta-box-value">{'Yes (Live Fetched)' if res.enrichment_used else 'No (Bypassed / Cached)'}</div>
-                          </div>
-                          <div class="meta-box">
-                            <div class="meta-box-label">Subdomain Split</div>
-                            <div class="meta-box-value">{html.escape(res.subdomain or 'Root Domain')}</div>
-                          </div>
-                        </div>
-
-                        <div class="reason-box">
-                          <strong>Reasoning: </strong>
-                          <span>{html.escape(res.reason or 'Classified via rule engine.')}</span>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
+                    # Render Category Hero Box (unindented to prevent markdown pre/code block formatting)
+                    hero_html = (
+                        f'<div class="category-hero">'
+                        f'<div class="category-hero-bar" style="background: {color}; box-shadow: 0 0 12px {color};"></div>'
+                        f'<div class="category-header-top">'
+                        f'<span class="cat-id-pill">{cat_id_display}</span>'
+                        f'<span class="source-pill {src_class}" style="{status_pill_style}">{status_badge_text}</span>'
+                        f'</div>'
+                        f'{cat_display_html}'
+                        f'<div class="domain-display">'
+                        f'<span>🌐</span>'
+                        f'<span>{html.escape(res.domain)}</span>'
+                        f'</div>'
+                        f'<div class="confidence-meter">'
+                        f'<div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #9ca3af;">'
+                        f'<span>Confidence Score</span>'
+                        f'<strong style="color: #f9fafb;">{res.confidence:.2f} ({conf_pct}%)</strong>'
+                        f'</div>'
+                        f'<div class="confidence-bar-bg">'
+                        f'<div class="confidence-bar-fill" style="width: {conf_pct}%;"></div>'
+                        f'</div>'
+                        f'</div>'
+                        f'</div>'
+                        f'<div class="meta-tags-grid">'
+                        f'<div class="meta-box">'
+                        f'<div class="meta-box-label">Rule Applied</div>'
+                        f'<div class="meta-box-value">{html.escape(res.rule_applied or ("unclassifiable" if is_unclassified else "F1 / General"))}</div>'
+                        f'</div>'
+                        f'<div class="meta-box">'
+                        f'<div class="meta-box-label">HTTP Enrichment</div>'
+                        f'<div class="meta-box-value">{"Yes (Live Fetched)" if res.enrichment_used else "No (Bypassed / Cached)"}</div>'
+                        f'</div>'
+                        f'<div class="meta-box">'
+                        f'<div class="meta-box-label">Subdomain Split</div>'
+                        f'<div class="meta-box-value">{html.escape(res.subdomain or "Root Domain")}</div>'
+                        f'</div>'
+                        f'</div>'
+                        f'<div class="reason-box">'
+                        f'<strong>Reasoning: </strong>'
+                        f'<span>{html.escape(res.reason or "Classified via rule engine.")}</span>'
+                        f'</div>'
                     )
+                    st.markdown(hero_html, unsafe_allow_html=True)
 
                     # Extracted Web Evidence Expander
                     if res.metadata_used:
@@ -696,12 +688,10 @@ with tab_play:
         else:
             # Empty State Placeholder
             st.markdown(
-                """
-                <div class="result-placeholder">
-                  <div style="font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5;">⚡</div>
-                  <p style="font-size: 0.95rem;">Enter a domain or click one of the quick test examples on the left to trigger the classification pipeline.</p>
-                </div>
-                """,
+                """<div class="result-placeholder">
+<div style="font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5;">⚡</div>
+<p style="font-size: 0.95rem;">Enter a domain or click one of the quick test examples on the left to trigger the classification pipeline.</p>
+</div>""",
                 unsafe_allow_html=True,
             )
 
@@ -711,14 +701,12 @@ with tab_play:
 # ==========================================
 with tab_batch:
     st.markdown(
-        """
-        <div class="glass-card-header">
-          <div>
-            <div class="glass-card-title"><span>📦</span> High-Throughput Batch Deduplication Tester</div>
-            <div class="glass-card-subtitle">Paste multiple domains or upload a CSV to test pre-classification deduplication & concurrency</div>
-          </div>
-        </div>
-        """,
+        """<div class="glass-card-header">
+<div>
+<div class="glass-card-title"><span>📦</span> High-Throughput Batch Deduplication Tester</div>
+<div class="glass-card-subtitle">Paste multiple domains or upload a CSV to test pre-classification deduplication & concurrency</div>
+</div>
+</div>""",
         unsafe_allow_html=True,
     )
 
@@ -804,38 +792,38 @@ with tab_batch:
 # ==========================================
 with tab_cats:
     st.markdown(
-        """
-        <div class="glass-card-header">
-          <div>
-            <div class="glass-card-title"><span>📋</span> The 10-Category Fixed Taxonomy</div>
-            <div class="glass-card-subtitle">Every website is strictly classified into exactly one of these 10 categories</div>
-          </div>
-        </div>
-        """,
+        """<div class="glass-card-header">
+<div>
+<div class="glass-card-title"><span>📋</span> The 10-Category Fixed Taxonomy</div>
+<div class="glass-card-subtitle">Every website is strictly classified into exactly one of these 10 categories</div>
+</div>
+</div>""",
         unsafe_allow_html=True,
     )
 
-    cats_html = '<div class="categories-grid">'
+    cats_cards = []
     for cat_id in sorted(CATEGORIES_REGISTRY.keys()):
         cat = CATEGORIES_REGISTRY[cat_id]
         cat_name = cat.name.value
         color = CATEGORY_COLORS.get(cat_name, "#6366f1")
         icon = CATEGORY_ICONS.get(cat_name, "📌")
 
-        cats_html += f"""
-        <div class="category-card" style="border-top: 4px solid {color};">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 1.3rem;">{icon}</span>
-            <span class="cat-id-pill">ID #{cat.id}</span>
-          </div>
-          <div style="font-size: 1.1rem; font-weight: 700; color: {color};">{html.escape(cat_name)}</div>
-          <div style="font-size: 0.82rem; color: #9ca3af; line-height: 1.4;">{html.escape(cat.description)}</div>
-          <div style="font-size: 0.75rem; color: #6b7280; background: rgba(0,0,0,0.3); padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: auto;">
-            <strong>Examples:</strong> {html.escape(cat.examples_scope)}
-          </div>
-        </div>
-        """
-    cats_html += '</div>'
+        card_html = (
+            f'<div class="category-card" style="border-top: 4px solid {color};">'
+            f'<div style="display: flex; justify-content: space-between; align-items: center;">'
+            f'<span style="font-size: 1.3rem;">{icon}</span>'
+            f'<span class="cat-id-pill">ID #{cat.id}</span>'
+            f'</div>'
+            f'<div style="font-size: 1.1rem; font-weight: 700; color: {color};">{html.escape(cat_name)}</div>'
+            f'<div style="font-size: 0.82rem; color: #9ca3af; line-height: 1.4;">{html.escape(cat.description)}</div>'
+            f'<div style="font-size: 0.75rem; color: #6b7280; background: rgba(0,0,0,0.3); padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: auto;">'
+            f'<strong>Examples:</strong> {html.escape(cat.examples_scope)}'
+            f'</div>'
+            f'</div>'
+        )
+        cats_cards.append(card_html)
+
+    cats_html = '<div class="categories-grid">' + "".join(cats_cards) + '</div>'
     st.markdown(cats_html, unsafe_allow_html=True)
 
 
@@ -844,37 +832,33 @@ with tab_cats:
 # ==========================================
 with tab_rules:
     st.markdown(
-        """
-        <div class="glass-card-header">
-          <div>
-            <div class="glass-card-title"><span>🛡️</span> Locked Business Rules & Tie-Breakers (F1, TB1–TB8)</div>
-            <div class="glass-card-subtitle">Auditable, versioned rules injected directly into the LLM system prompt</div>
-          </div>
-        </div>
-        """,
+        """<div class="glass-card-header">
+<div>
+<div class="glass-card-title"><span>🛡️</span> Locked Business Rules & Tie-Breakers (F1, TB1–TB8)</div>
+<div class="glass-card-subtitle">Auditable, versioned rules injected directly into the LLM system prompt</div>
+</div>
+</div>""",
         unsafe_allow_html=True,
     )
 
     rules = rule_registry.list_rules(sorted_by_precedence=True)
     for rule in rules:
-        st.markdown(
-            f"""
-            <div class="rule-item">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-                <div>
-                  <span class="rule-id-badge">{rule.rule_id}</span>
-                  <strong style="font-size: 1.05rem; margin-left: 0.5rem; color: #f9fafb;">{html.escape(rule.name)}</strong>
-                </div>
-                <span style="font-size: 0.75rem; color: #9ca3af;">Scope: {rule.scope.value} | Precedence: {rule.precedence}</span>
-              </div>
-              <div style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 0.5rem;">{html.escape(rule.description)}</div>
-              <div style="font-size: 0.82rem; color: #c7d2fe; background: rgba(0, 0, 0, 0.25); padding: 0.65rem 0.9rem; border-radius: 8px;">
-                <strong>Prompt Instruction:</strong> "{html.escape(rule.prompt_instruction)}"
-              </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        rule_html = (
+            f'<div class="rule-item">'
+            f'<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">'
+            f'<div>'
+            f'<span class="rule-id-badge">{rule.rule_id}</span>'
+            f'<strong style="font-size: 1.05rem; margin-left: 0.5rem; color: #f9fafb;">{html.escape(rule.name)}</strong>'
+            f'</div>'
+            f'<span style="font-size: 0.75rem; color: #9ca3af;">Scope: {rule.scope.value} | Precedence: {rule.precedence}</span>'
+            f'</div>'
+            f'<div style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 0.5rem;">{html.escape(rule.description)}</div>'
+            f'<div style="font-size: 0.82rem; color: #c7d2fe; background: rgba(0, 0, 0, 0.25); padding: 0.65rem 0.9rem; border-radius: 8px;">'
+            f'<strong>Prompt Instruction:</strong> "{html.escape(rule.prompt_instruction)}"'
+            f'</div>'
+            f'</div>'
         )
+        st.markdown(rule_html, unsafe_allow_html=True)
 
 
 # ==========================================
@@ -882,14 +866,12 @@ with tab_rules:
 # ==========================================
 with tab_override:
     st.markdown(
-        """
-        <div class="glass-card-header">
-          <div>
-            <div class="glass-card-title"><span>👤</span> Create Human Override Record</div>
-            <div class="glass-card-subtitle">Set an immutable classification that cannot be overwritten by AI</div>
-          </div>
-        </div>
-        """,
+        """<div class="glass-card-header">
+<div>
+<div class="glass-card-title"><span>👤</span> Create Human Override Record</div>
+<div class="glass-card-subtitle">Set an immutable classification that cannot be overwritten by AI</div>
+</div>
+</div>""",
         unsafe_allow_html=True,
     )
 
@@ -930,14 +912,12 @@ with tab_override:
 # ==========================================
 with tab_db:
     st.markdown(
-        """
-        <div class="glass-card-header">
-          <div>
-            <div class="glass-card-title"><span>💾</span> Stored Domain Classifications (Database Table)</div>
-            <div class="glass-card-subtitle">Active SQLite persistent cache and human overrides (File: data/domains.db)</div>
-          </div>
-        </div>
-        """,
+        """<div class="glass-card-header">
+<div>
+<div class="glass-card-title"><span>💾</span> Stored Domain Classifications (Database Table)</div>
+<div class="glass-card-subtitle">Active SQLite persistent cache and human overrides (File: data/domains.db)</div>
+</div>
+</div>""",
         unsafe_allow_html=True,
     )
 
