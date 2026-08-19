@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import html
 import os
 from pathlib import Path
@@ -12,6 +13,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+def run_sync(coro):
+    """Run an async coroutine in an isolated thread to prevent Streamlit Tornado/asyncio event loop deadlocks."""
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(asyncio.run, coro)
+        return future.result()
 
 # 2. Bridge Streamlit Cloud Secrets to Environment
 if hasattr(st, "secrets"):
@@ -594,9 +601,7 @@ with tab_play:
             with st.spinner(f"Classifying '{input_to_run}' via 2-layer pipeline..."):
                 try:
                     db = get_db_session()
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    res = loop.run_until_complete(
+                    res = run_sync(
                         pipeline.classify(
                             raw_input=input_to_run,
                             subdomain=custom_subdomain.strip() if custom_subdomain else None,
@@ -743,9 +748,7 @@ with tab_batch:
                 db = get_db_session()
                 items = [{"domain": d} for d in domains_to_process]
 
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                results, summary = loop.run_until_complete(
+                results, summary = run_sync(
                     bulk_classifier.process_items(items, db_session=db)
                 )
                 db.close()
