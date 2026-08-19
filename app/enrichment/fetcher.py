@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import threading
 import time
 from urllib.parse import urljoin, urlparse
 from typing import Dict, Optional
@@ -19,19 +20,21 @@ class HostRateLimiter:
     def __init__(self, min_interval_seconds: float = 0.5):
         self.min_interval = min_interval_seconds
         self._last_request_time: Dict[str, float] = {}
-        self._lock = asyncio.Lock()
+        self._thread_lock = threading.Lock()
 
     async def throttle(self, hostname: str) -> None:
         if not hostname:
             return
-        async with self._lock:
+        wait_time = 0.0
+        with self._thread_lock:
             now = time.time()
             last_time = self._last_request_time.get(hostname, 0.0)
             elapsed = now - last_time
             if elapsed < self.min_interval:
                 wait_time = self.min_interval - elapsed
-                await asyncio.sleep(wait_time)
-            self._last_request_time[hostname] = time.time()
+            self._last_request_time[hostname] = now + wait_time
+        if wait_time > 0:
+            await asyncio.sleep(wait_time)
 
 
 class HTTPMetadataFetcher:

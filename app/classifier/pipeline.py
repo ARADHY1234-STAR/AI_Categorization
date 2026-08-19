@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import Dict, Optional
+import threading
+from typing import Dict, Optional, Tuple
 from sqlalchemy.orm import Session
 
 from app.config.settings import Settings, get_settings
@@ -46,15 +47,21 @@ class DomainClassificationPipeline:
         self.override_engine = (
             override_engine or BrandOverrideEngine(self.settings.BRAND_OVERRIDES_PATH)
         )
-        self._in_flight_locks: Dict[str, asyncio.Lock] = {}
-        self._lock_guard = asyncio.Lock()
+        self._in_flight_locks: Dict[Tuple[int, str], asyncio.Lock] = {}
+        self._thread_lock = threading.Lock()
 
-    async def _get_domain_lock(self, fqdn: str) -> asyncio.Lock:
-        """Single-flight lock for in-flight requests on the same domain."""
-        async with self._lock_guard:
-            if fqdn not in self._in_flight_locks:
-                self._in_flight_locks[fqdn] = asyncio.Lock()
-            return self._in_flight_locks[fqdn]
+    def _get_domain_lock(self, fqdn: str) -> asyncio.Lock:
+        """Single-flight lock for in-flight requests on the same domain, isolated per active event loop."""
+        try:
+            loop = asyncio.get_running_loop()
+            loop_id = id(loop)
+        except RuntimeError:
+            loop_id = 0
+        key = (loop_id, fqdn)
+        with self._thread_lock:
+            if key not in self._in_flight_locks:
+                self._in_flight_locks[key] = asyncio.Lock()
+            return self._in_flight_locks[key]
 
     async def classify(
         self,
@@ -72,7 +79,7 @@ class DomainClassificationPipeline:
             app_name=app_name,
         )
 
-        domain_lock = await self._get_domain_lock(norm.fqdn)
+        domain_lock = self._get_domain_lock(norm.fqdn)
         async with domain_lock:
             session_created = False
             if db_session is None:
