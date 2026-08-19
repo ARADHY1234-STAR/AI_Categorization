@@ -751,9 +751,9 @@ with tab_batch:
                 db.close()
 
                 st.success(
-                    f"✅ Processed {len(results)} rows in {summary.get('duration_seconds', 0):.2f}s "
-                    f"({summary.get('cached_hits', 0)} DB hits, {summary.get('override_hits', 0)} brand overrides, "
-                    f"{summary.get('llm_calls', 0)} live LLM inferences)."
+                    f"✅ Processed {len(results)} rows ({summary.unique_domains_count} unique domains) in {summary.processing_time_seconds:.2f}s "
+                    f"({summary.cached_hits_count} DB hits, {summary.brand_override_count} brand overrides, "
+                    f"{summary.llm_classified_count} LLM classified, {summary.needs_review_or_error_count} unclassified/review)."
                 )
 
                 # Format DataFrame Table
