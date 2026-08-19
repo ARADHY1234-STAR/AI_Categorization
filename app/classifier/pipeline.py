@@ -174,9 +174,9 @@ class DomainClassificationPipeline:
                         f"Domain '{norm.fqdn}' has no meaningful content and confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Returning UNCLASSIFIED (No Category Found)."
                     )
                     fallback_msg = (
-                        "The domain timed out and returned no identifiable content or metadata, making classification impossible."
+                        "The domain timed out and returned no identifiable content or metadata, making it unclassifiable."
                         if fetch_result.fetch_status == FetchStatus.TIMEOUT
-                        else "The domain failed to resolve and returned no identifiable content or metadata, making classification impossible."
+                        else "The domain failed to resolve and returned no identifiable content or metadata, making it unclassifiable."
                     )
                     unclass_reason = llm_output.reason or fallback_msg
                     return ClassificationResponse(
@@ -253,9 +253,9 @@ class DomainClassificationPipeline:
             # Fallback / Unclassifiable (No category, unresolvable, or error) - Do NOT save to DB
             logger.warning(f"Could not classify '{norm.fqdn}'. Returning UNCLASSIFIED without saving to DB.")
             default_msg = (
-                "The domain timed out and returned no identifiable content or metadata, making classification impossible."
+                "The domain timed out and returned no identifiable content or metadata, making it unclassifiable."
                 if fetch_result.fetch_status == FetchStatus.TIMEOUT
-                else "The domain failed to resolve and returned no identifiable content or metadata, making classification impossible."
+                else "The domain failed to resolve and returned no identifiable content or metadata, making it unclassifiable."
             )
             fail_reason = (llm_output.reason if (llm_output and llm_output.reason) else default_msg)
             return ClassificationResponse(

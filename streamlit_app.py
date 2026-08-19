@@ -14,11 +14,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-def run_sync(coro):
-    """Run an async coroutine in an isolated thread to prevent Streamlit Tornado/asyncio event loop deadlocks."""
+def run_async(async_fn, *args, **kwargs):
+    """Run an async function cleanly inside an isolated worker thread with its own fresh event loop."""
+    def _worker():
+        return asyncio.run(async_fn(*args, **kwargs))
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(asyncio.run, coro)
-        return future.result()
+        return executor.submit(_worker).result()
 
 # 2. Bridge Streamlit Cloud Secrets to Environment
 if hasattr(st, "secrets"):
@@ -72,9 +74,8 @@ CATEGORY_ICONS = {
 }
 
 
-@st.cache_resource
 def get_pipeline():
-    """Cache and reuse classification pipeline instance."""
+    """Create classification pipeline instance."""
     settings = get_settings()
     pipe = DomainClassificationPipeline(settings=settings)
     bulk = BulkClassifier(pipeline=pipe)
@@ -601,14 +602,13 @@ with tab_play:
             with st.spinner(f"Classifying '{input_to_run}' via 2-layer pipeline..."):
                 try:
                     db = get_db_session()
-                    res = run_sync(
-                        pipeline.classify(
-                            raw_input=input_to_run,
-                            subdomain=custom_subdomain.strip() if custom_subdomain else None,
-                            app_name=custom_app_name.strip() if custom_app_name else None,
-                            db_session=db,
-                            force_refresh=force_refresh,
-                        )
+                    res = run_async(
+                        pipeline.classify,
+                        raw_input=input_to_run,
+                        subdomain=custom_subdomain.strip() if custom_subdomain else None,
+                        app_name=custom_app_name.strip() if custom_app_name else None,
+                        db_session=db,
+                        force_refresh=force_refresh,
                     )
                     db.close()
 
@@ -748,8 +748,10 @@ with tab_batch:
                 db = get_db_session()
                 items = [{"domain": d} for d in domains_to_process]
 
-                results, summary = run_sync(
-                    bulk_classifier.process_items(items, db_session=db)
+                results, summary = run_async(
+                    bulk_classifier.process_items,
+                    items,
+                    db_session=db,
                 )
                 db.close()
 
