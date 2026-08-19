@@ -17,7 +17,9 @@ htmlcov/
 # Environment Variables & Secrets
 .env
 *.env.local
- 
+.streamlit/secrets.toml
+.streamlit/
+
 # Database
 *.db
 *.sqlite
