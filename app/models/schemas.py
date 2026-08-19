@@ -6,6 +6,7 @@ from app.models.category import ALLOWED_CATEGORY_NAMES, get_category_id_by_name
 
 class ClassificationStatus(str, Enum):
     CLASSIFIED = "CLASSIFIED"
+    UNCLASSIFIED = "UNCLASSIFIED"
     UNKNOWN = "UNKNOWN"
     ERROR = "ERROR"
     OVERRIDE = "OVERRIDE"
@@ -74,7 +75,7 @@ class LLMClassificationOutput(BaseModel):
     @field_validator("category")
     @classmethod
     def validate_category(cls, v: Optional[str]) -> Optional[str]:
-        if v is None:
+        if v is None or v in ("No Category Found", "Unclassified", "UNCLASSIFIED", "null", "None", "", "N/A"):
             return None
         if v not in ALLOWED_CATEGORY_NAMES:
             raise ValueError(f"Category '{v}' is not one of the 10 allowed categories: {ALLOWED_CATEGORY_NAMES}")
@@ -83,6 +84,8 @@ class LLMClassificationOutput(BaseModel):
     def model_post_init(self, __context: Any) -> None:
         if self.category and not self.category_id:
             self.category_id = get_category_id_by_name(self.category)
+        elif not self.category:
+            self.category_id = None
 
 
 class ClassificationResponse(BaseModel):

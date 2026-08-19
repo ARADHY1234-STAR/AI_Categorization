@@ -611,9 +611,29 @@ with tab_play:
                     )
                     db.close()
 
-                    cat_name = res.category or "NEEDS_REVIEW"
-                    color = CATEGORY_COLORS.get(cat_name, "#6366f1")
-                    icon = CATEGORY_ICONS.get(cat_name, "🔍")
+                    is_unclassified = (
+                        res.status == "UNCLASSIFIED"
+                        or res.category in ("No Category Found", None, "UNKNOWN")
+                        or res.category_id is None
+                    )
+
+                    if is_unclassified:
+                        cat_id_display = "Category ID: N/A"
+                        cat_name = "No Category Found"
+                        color = "#64748b"
+                        icon = "⚠️"
+                        cat_display_html = f'<div class="category-name-display" style="color: #cbd5e1;">{icon} {html.escape(cat_name)}</div>'
+                        status_badge_text = "UNCLASSIFIED"
+                        status_pill_style = "background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);"
+                    else:
+                        cat_id_display = f"Category ID: #{res.category_id}"
+                        cat_name = res.category
+                        color = CATEGORY_COLORS.get(cat_name, "#6366f1")
+                        icon = CATEGORY_ICONS.get(cat_name, "🔍")
+                        cat_display_html = f'<div class="category-name-display" style="color: {color};">{icon} {html.escape(cat_name)}</div>'
+                        status_badge_text = res.source.replace('_', ' ').title()
+                        status_pill_style = ""
+
                     conf_pct = int(res.confidence * 100)
                     src_class = f"source-{res.source}"
 
@@ -623,10 +643,10 @@ with tab_play:
                         <div class="category-hero">
                           <div class="category-hero-bar" style="background: {color}; box-shadow: 0 0 12px {color};"></div>
                           <div class="category-header-top">
-                            <span class="cat-id-pill">Category ID: #{res.category_id or '—'}</span>
-                            <span class="source-pill {src_class}">{res.source.replace('_', ' ').title()}</span>
+                            <span class="cat-id-pill">{cat_id_display}</span>
+                            <span class="source-pill {src_class}" style="{status_pill_style}">{status_badge_text}</span>
                           </div>
-                          <div class="category-name-display" style="color: {color};">{icon} {html.escape(cat_name)}</div>
+                          {cat_display_html}
                           <div class="domain-display">
                             <span>🌐</span>
                             <span>{html.escape(res.domain)}</span>
@@ -645,7 +665,7 @@ with tab_play:
                         <div class="meta-tags-grid">
                           <div class="meta-box">
                             <div class="meta-box-label">Rule Applied</div>
-                            <div class="meta-box-value">{html.escape(res.rule_applied or 'F1 / General')}</div>
+                            <div class="meta-box-value">{html.escape(res.rule_applied or ('unclassifiable' if is_unclassified else 'F1 / General'))}</div>
                           </div>
                           <div class="meta-box">
                             <div class="meta-box-label">HTTP Enrichment</div>
@@ -755,8 +775,8 @@ with tab_batch:
                         "#": idx,
                         "Normalized FQDN": r.domain,
                         "Subdomain": r.subdomain or "—",
-                        "Category": r.category or "NEEDS_REVIEW",
-                        "Category ID": r.category_id or "—",
+                        "Category": r.category if (r.category and r.category != "None") else "No Category Found",
+                        "Category ID": f"#{r.category_id}" if r.category_id else "N/A",
                         "Confidence": f"{r.confidence:.2f}",
                         "Source": r.source,
                         "Rule": r.rule_applied or "—",

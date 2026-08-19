@@ -148,15 +148,16 @@ function renderClassificationResult(data) {
   statusBadge.textContent = data.status || "CLASSIFIED";
 
   // Category & Color
-  const catName = data.category || "Unknown / Uncertain";
-  const catColor = CATEGORY_COLORS[catName] || "#6b7280";
+  const isUnclassified = data.status === "UNCLASSIFIED" || !data.category_id || data.category === "No Category Found" || data.category === "null" || !data.category;
+  const catName = isUnclassified ? "No Category Found" : data.category;
+  const catColor = isUnclassified ? "#64748b" : (CATEGORY_COLORS[catName] || "#6b7280");
   
   const heroBlock = document.getElementById("result-hero");
   heroBlock.style.setProperty("--category-color", catColor);
 
   document.getElementById("res-category-name").textContent = catName;
-  document.getElementById("res-category-name").style.color = catColor;
-  document.getElementById("res-cat-id").textContent = data.category_id ? `Category ID: #${data.category_id}` : "Unresolved";
+  document.getElementById("res-category-name").style.color = isUnclassified ? "#cbd5e1" : catColor;
+  document.getElementById("res-cat-id").textContent = isUnclassified ? "Category ID: N/A" : `Category ID: #${data.category_id}`;
   document.getElementById("res-domain-name").querySelector("span").textContent = data.domain;
 
   // Source Pill

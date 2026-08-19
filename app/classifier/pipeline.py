@@ -170,20 +170,57 @@ class DomainClassificationPipeline:
                     "final_url": fetch_result.final_url,
                 }
 
+                has_meaningful_content = bool(
+                    fetch_result.metadata.title
+                    or fetch_result.metadata.description
+                    or (fetch_result.metadata.headings and len(fetch_result.metadata.headings) > 0)
+                    or (fetch_result.metadata.body_sample and len(fetch_result.metadata.body_sample.strip()) > 10)
+                )
+
                 if llm_output and llm_output.category:
-                    # Enforce confidence threshold: Low-confidence items need review and are NOT cached to database
-                    if llm_output.confidence < self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD:
+                    # If domain is unresolvable / has no meaningful content and confidence is below threshold, treat as UNCLASSIFIED
+                    if not has_meaningful_content and llm_output.confidence < self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD:
                         logger.info(
-                            f"Layer 2 confidence {llm_output.confidence:.2f} < threshold {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Flagged as NEEDS_REVIEW (Not saved to DB)."
+                            f"Domain '{norm.fqdn}' has no meaningful content and confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Returning UNCLASSIFIED (No Category Found)."
                         )
                         return ClassificationResponse(
                             original_url=raw_input,
                             domain=norm.fqdn,
                             subdomain=norm.normalized_subdomain,
-                            category=llm_output.category,
-                            category_id=llm_output.category_id,
+                            category="No Category Found",
+                            category_id=None,
                             confidence=llm_output.confidence,
-                            status=ClassificationStatus.NEEDS_REVIEW.value,
+                            status=ClassificationStatus.UNCLASSIFIED.value,
+                            source=ClassificationSource.LLM_CATEGORIZER.value,
+                            rule_applied="unresolvable_or_no_metadata",
+                            reason=f"Needs Review - Confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. The domain failed to resolve and returned no metadata or identifiable content, making it impossible to determine its function.",
+                            enrichment_used=True,
+                            final_url=fetch_result.final_url,
+                            http_status=fetch_result.http_status,
+                            metadata_fetch_status=fetch_result.fetch_status.value,
+                            metadata_used=metadata_used_dict,
+                            model_name=metadata.get("model"),
+                        )
+
+                    # Enforce confidence threshold: Low-confidence items need review and are NOT cached to database
+                    if llm_output.confidence < self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD:
+                        logger.info(
+                            f"Layer 2 confidence {llm_output.confidence:.2f} < threshold {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Flagged as NEEDS_REVIEW (Not saved to DB)."
+                        )
+                        # If confidence is very low (< 0.50) without strong evidence, treat as unclassified
+                        is_very_low = llm_output.confidence < 0.50
+                        cat_res = "No Category Found" if is_very_low else llm_output.category
+                        cat_id_res = None if is_very_low else llm_output.category_id
+                        status_res = ClassificationStatus.UNCLASSIFIED.value if is_very_low else ClassificationStatus.NEEDS_REVIEW.value
+
+                        return ClassificationResponse(
+                            original_url=raw_input,
+                            domain=norm.fqdn,
+                            subdomain=norm.normalized_subdomain,
+                            category=cat_res,
+                            category_id=cat_id_res,
+                            confidence=llm_output.confidence,
+                            status=status_res,
                             source=ClassificationSource.LLM_CATEGORIZER.value,
                             rule_applied=llm_output.rule_applied or "low_confidence_review",
                             reason=f"[Needs Review - Confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}] {llm_output.reason or ''}".strip(),
@@ -217,19 +254,23 @@ class DomainClassificationPipeline:
                     )
                     return repo.to_response(record, original_url=raw_input)
 
-                # Fallback / Needs Review (No category or error) - Do NOT save to DB
-                logger.warning(f"Could not classify '{norm.fqdn}'. Returning NEEDS_REVIEW without saving to DB.")
+                # Fallback / Unclassifiable (No category, unresolvable, or error) - Do NOT save to DB
+                logger.warning(f"Could not classify '{norm.fqdn}'. Returning UNCLASSIFIED without saving to DB.")
+                fail_reason = (
+                    llm_output.reason if (llm_output and llm_output.reason)
+                    else "Needs Review - Confidence 0.00 < 0.8. The domain failed to resolve and returned no metadata or identifiable content, making it impossible to determine its function."
+                )
                 return ClassificationResponse(
                     original_url=raw_input,
                     domain=norm.fqdn,
                     subdomain=norm.normalized_subdomain,
-                    category=None,
+                    category="No Category Found",
                     category_id=None,
                     confidence=llm_output.confidence if llm_output else 0.0,
-                    status=ClassificationStatus.NEEDS_REVIEW.value,
+                    status=ClassificationStatus.UNCLASSIFIED.value,
                     source=ClassificationSource.LLM_CATEGORIZER.value,
-                    rule_applied="unresolved_rule",
-                    reason=llm_output.reason if llm_output else "Unresolved classification after Layer 1 & Layer 2",
+                    rule_applied=llm_output.rule_applied if llm_output else "unclassifiable",
+                    reason=fail_reason,
                     enrichment_used=True,
                     final_url=fetch_result.final_url,
                     http_status=fetch_result.http_status,

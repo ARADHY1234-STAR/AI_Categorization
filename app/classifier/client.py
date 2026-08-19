@@ -134,21 +134,17 @@ class OpenRouterLLMClient:
                         metadata,
                     )
 
-                # Validate category strictly against the 10 allowed
+                # Validate category strictly against the 10 allowed (or None/unclassified)
                 cat = parsed_dict.get("category")
-                if cat and cat not in ALLOWED_CATEGORY_NAMES:
-                    logger.error(f"Invalid category '{cat}' returned by LLM. Rejecting.")
-                    return (
-                        LLMClassificationOutput(
-                            domain=parsed_dict.get("domain", "unknown"),
-                            category=None,
-                            category_id=None,
-                            confidence=0.0,
-                            status=ClassificationStatus.NEEDS_REVIEW,
-                            reason=f"Rejected invalid category returned by LLM: '{cat}'",
-                        ),
-                        metadata,
-                    )
+                if cat in ("No Category Found", "Unclassified", "UNCLASSIFIED", "null", "None", "", "N/A", None):
+                    parsed_dict["category"] = None
+                    parsed_dict["category_id"] = None
+                    parsed_dict["status"] = ClassificationStatus.UNCLASSIFIED.value
+                elif cat not in ALLOWED_CATEGORY_NAMES:
+                    logger.warning(f"Invalid category '{cat}' returned by LLM. Marking UNCLASSIFIED.")
+                    parsed_dict["category"] = None
+                    parsed_dict["category_id"] = None
+                    parsed_dict["status"] = ClassificationStatus.UNCLASSIFIED.value
 
                 result = LLMClassificationOutput(**parsed_dict)
                 return result, metadata
