@@ -657,7 +657,7 @@ with tab_play:
                         f'<div class="meta-tags-grid">'
                         f'<div class="meta-box">'
                         f'<div class="meta-box-label">Rule Applied</div>'
-                        f'<div class="meta-box-value">{html.escape(res.rule_applied or ("unclassifiable" if is_unclassified else "F1 / General"))}</div>'
+                        f'<div class="meta-box-value">{html.escape(res.rule_applied or "unclassifiable")}</div>'
                         f'</div>'
                         f'<div class="meta-box">'
                         f'<div class="meta-box-label">HTTP Enrichment</div>'
