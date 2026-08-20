@@ -173,7 +173,17 @@ function renderClassificationResult(data) {
 
   // Metadata boxes
   document.getElementById("res-rule-applied").textContent = data.rule_applied || (data.source === "brand_override" ? "F1 / Brand Override" : "Rule Engine");
-  document.getElementById("res-enrichment-used").textContent = data.enrichment_used ? "Yes (Fetched)" : "No (Bypassed)";
+  let enrichText = "No (Bypassed / Cached)";
+  if (data.enrichment_used) {
+    if (data.metadata_fetch_status === "SUCCESS") {
+      enrichText = "Success (Data Fetched)";
+    } else if (data.metadata_fetch_status) {
+      enrichText = `Failed (${data.metadata_fetch_status.replace(/_/g, ' ')})`;
+    } else {
+      enrichText = "Attempted (No Data)";
+    }
+  }
+  document.getElementById("res-enrichment-used").textContent = enrichText;
   document.getElementById("res-subdomain-split").textContent = data.subdomain ? `${data.subdomain} (TB6 Subdomain)` : "Root Domain";
 
   // Reason

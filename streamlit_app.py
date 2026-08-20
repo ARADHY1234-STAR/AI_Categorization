@@ -631,6 +631,15 @@ with tab_play:
                     conf_pct = int(res.confidence * 100)
                     src_class = f"source-{res.source}"
 
+                    if not res.enrichment_used:
+                        enrich_display = "No (Bypassed / Cached)"
+                    elif res.metadata_fetch_status == "SUCCESS":
+                        enrich_display = "Success (Data Fetched)"
+                    elif res.metadata_fetch_status in ("DNS_FAILURE", "SSRF_BLOCKED", "TIMEOUT", "HTTP_ERROR"):
+                        enrich_display = f"Failed ({res.metadata_fetch_status.replace('_', ' ').title()})"
+                    else:
+                        enrich_display = f"Attempted ({res.metadata_fetch_status or 'No Data'})"
+
                     # Render Category Hero Box (unindented to prevent markdown pre/code block formatting)
                     hero_html = (
                         f'<div class="category-hero">'
@@ -661,7 +670,7 @@ with tab_play:
                         f'</div>'
                         f'<div class="meta-box">'
                         f'<div class="meta-box-label">HTTP Enrichment</div>'
-                        f'<div class="meta-box-value">{"Yes (Live Fetched)" if res.enrichment_used else "No (Bypassed / Cached)"}</div>'
+                        f'<div class="meta-box-value">{html.escape(enrich_display)}</div>'
                         f'</div>'
                         f'<div class="meta-box">'
                         f'<div class="meta-box-label">Subdomain Split</div>'
