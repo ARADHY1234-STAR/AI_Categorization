@@ -614,26 +614,17 @@ with tab_play:
                     )
                     db.close()
 
-                    is_unclassified = (
-                        res.status == "UNCLASSIFIED"
-                        or res.category in ("No Category Found", None, "UNKNOWN")
-                        or res.category_id is None
-                    )
+                    cat_name = res.category or "Miscellaneous"
+                    cat_id = res.category_id or 11
+                    cat_id_display = f"Category ID: #{cat_id}"
+                    color = CATEGORY_COLORS.get(cat_name, "#64748b")
+                    icon = CATEGORY_ICONS.get(cat_name, "📦" if cat_id == 11 else "🔍")
+                    cat_display_html = f'<div class="category-name-display" style="color: {color};">{icon} {html.escape(cat_name)}</div>'
 
-                    if is_unclassified:
-                        cat_id_display = "Category ID: N/A"
-                        cat_name = "No Category Found"
-                        color = "#64748b"
-                        icon = "⚠️"
-                        cat_display_html = f'<div class="category-name-display" style="color: #cbd5e1;">{icon} {html.escape(cat_name)}</div>'
-                        status_badge_text = "UNCLASSIFIED"
-                        status_pill_style = "background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);"
+                    if res.status in ("LOW_CONFIDENCE", "UNCLASSIFIED"):
+                        status_badge_text = res.status
+                        status_pill_style = "background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid rgba(100, 116, 139, 0.4);"
                     else:
-                        cat_id_display = f"Category ID: #{res.category_id}"
-                        cat_name = res.category
-                        color = CATEGORY_COLORS.get(cat_name, "#6366f1")
-                        icon = CATEGORY_ICONS.get(cat_name, "🔍")
-                        cat_display_html = f'<div class="category-name-display" style="color: {color};">{icon} {html.escape(cat_name)}</div>'
                         status_badge_text = res.source.replace('_', ' ').title()
                         status_pill_style = ""
 
@@ -766,12 +757,14 @@ with tab_batch:
                 # Format DataFrame Table
                 table_rows = []
                 for idx, r in enumerate(results, start=1):
+                    cat_val = r.category if (r.category and r.category != "None") else "Miscellaneous"
+                    cat_id_val = f"#{r.category_id}" if r.category_id else "#11"
                     table_rows.append({
                         "#": idx,
                         "Normalized FQDN": r.domain,
                         "Subdomain": r.subdomain or "—",
-                        "Category": r.category if (r.category and r.category != "None") else "No Category Found",
-                        "Category ID": f"#{r.category_id}" if r.category_id else "N/A",
+                        "Category": cat_val,
+                        "Category ID": cat_id_val,
                         "Confidence": f"{r.confidence:.2f}",
                         "Source": r.source,
                         "Rule": r.rule_applied or "—",
@@ -795,14 +788,14 @@ with tab_batch:
 
 
 # ==========================================
-# TAB 3: 10 FIXED CATEGORIES REFERENCE
+# TAB 3: 11 CATEGORIES REFERENCE
 # ==========================================
 with tab_cats:
     st.markdown(
         """<div class="glass-card-header">
 <div>
-<div class="glass-card-title"><span>📋</span> The 10-Category Fixed Taxonomy</div>
-<div class="glass-card-subtitle">Every website is strictly classified into exactly one of these 10 categories</div>
+<div class="glass-card-title"><span>📋</span> The 11-Category Taxonomy</div>
+<div class="glass-card-subtitle">Every website is strictly classified into exactly one of these 11 categories (including Category 11: Miscellaneous)</div>
 </div>
 </div>""",
         unsafe_allow_html=True,

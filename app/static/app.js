@@ -45,6 +45,7 @@ const CATEGORY_COLORS = {
   "Shopping & E-commerce": "#f97316",
   "System Utilities & Security": "#06b6d4",
   "File Storage & Data Sharing": "#14b8a6",
+  "Miscellaneous": "#64748b",
 };
 
 // 1. Tab Switching
@@ -148,16 +149,16 @@ function renderClassificationResult(data) {
   statusBadge.textContent = data.status || "CLASSIFIED";
 
   // Category & Color
-  const isUnclassified = data.status === "UNCLASSIFIED" || !data.category_id || data.category === "No Category Found" || data.category === "null" || !data.category;
-  const catName = isUnclassified ? "No Category Found" : data.category;
-  const catColor = isUnclassified ? "#64748b" : (CATEGORY_COLORS[catName] || "#6b7280");
+  const catName = data.category || "Miscellaneous";
+  const catId = data.category_id || 11;
+  const catColor = CATEGORY_COLORS[catName] || "#64748b";
   
   const heroBlock = document.getElementById("result-hero");
   heroBlock.style.setProperty("--category-color", catColor);
 
   document.getElementById("res-category-name").textContent = catName;
-  document.getElementById("res-category-name").style.color = isUnclassified ? "#cbd5e1" : catColor;
-  document.getElementById("res-cat-id").textContent = isUnclassified ? "Category ID: N/A" : `Category ID: #${data.category_id}`;
+  document.getElementById("res-category-name").style.color = catColor;
+  document.getElementById("res-cat-id").textContent = `Category ID: #${catId}`;
   document.getElementById("res-domain-name").querySelector("span").textContent = data.domain;
 
   // Source Pill
@@ -246,8 +247,8 @@ function initBatch() {
           <td>${idx + 1}</td>
           <td><strong>${item.domain}</strong></td>
           <td>${item.subdomain || "—"}</td>
-          <td><span style="color: ${color}; font-weight: 700;">${item.category || "UNKNOWN"}</span></td>
-          <td>${item.category_id || "—"}</td>
+          <td><span style="color: ${color}; font-weight: 700;">${item.category || "Miscellaneous"}</span></td>
+          <td>${item.category_id || 11}</td>
           <td>${item.confidence ? item.confidence.toFixed(2) : "0.00"}</td>
           <td><span class="source-pill source-${item.source}">${formatSourceName(item.source)}</span></td>
           <td><span class="status-badge" style="font-size:0.7rem;">${item.status}</span></td>
