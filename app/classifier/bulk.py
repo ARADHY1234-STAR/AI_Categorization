@@ -24,7 +24,8 @@ class BulkSummary:
     cached_hits_count: int
     brand_override_count: int
     llm_classified_count: int
-    needs_review_or_error_count: int
+    miscellaneous_count: int
+    error_count: int
     processing_time_seconds: float
 
 
@@ -48,7 +49,7 @@ class BulkClassifier:
         start_time = time.time()
         total_input_rows = len(items)
         if total_input_rows == 0:
-            return [], BulkSummary(0, 0, 0, 0, 0, 0, 0.0)
+            return [], BulkSummary(0, 0, 0, 0, 0, 0, 0, 0.0)
 
         # 1. Normalization & Deduplication
         unique_fqdns: Dict[str, NormalizedDomain] = {}
@@ -165,11 +166,15 @@ class BulkClassifier:
             # Metrics
             llm_classified = sum(
                 1 for r in classification_results.values()
-                if r.source == ClassificationSource.LLM_CATEGORIZER.value and r.status == "CLASSIFIED"
+                if r.source == ClassificationSource.LLM_CATEGORIZER.value and r.category_id in range(1, 11)
             )
-            needs_review_or_error = sum(
+            misc_count = sum(
                 1 for r in classification_results.values()
-                if r.status in ("NEEDS_REVIEW", "ERROR", "UNKNOWN")
+                if r.category_id == 11 or r.category == "Miscellaneous"
+            )
+            error_count = sum(
+                1 for r in classification_results.values()
+                if r.status in ("ERROR", "UNKNOWN")
             )
 
             # 5. Map classifications back to every original input row
@@ -182,6 +187,8 @@ class BulkClassifier:
                         ClassificationResponse(
                             original_url=items[idx].get("domain", ""),
                             domain=items[idx].get("domain", ""),
+                            category="Miscellaneous",
+                            category_id=11,
                             source="error",
                             confidence=0.0,
                             status="ERROR",
@@ -196,7 +203,8 @@ class BulkClassifier:
                 cached_hits_count=cached_hits,
                 brand_override_count=override_hits,
                 llm_classified_count=llm_classified,
-                needs_review_or_error_count=needs_review_or_error,
+                miscellaneous_count=misc_count,
+                error_count=error_count,
                 processing_time_seconds=round(duration, 2),
             )
 

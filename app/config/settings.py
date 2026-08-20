@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,7 +13,14 @@ class Settings(BaseSettings):
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
     # Classification Thresholds & Logic
-    CLASSIFIER_CONFIDENCE_THRESHOLD: float = 0.80
+    CONFIDENCE_THRESHOLD: float = 0.80
+    CLASSIFIER_CONFIDENCE_THRESHOLD: Optional[float] = None
+
+    def model_post_init(self, __context) -> None:
+        if self.CLASSIFIER_CONFIDENCE_THRESHOLD is not None and "CONFIDENCE_THRESHOLD" not in self.model_fields_set:
+            self.CONFIDENCE_THRESHOLD = self.CLASSIFIER_CONFIDENCE_THRESHOLD
+        elif self.CLASSIFIER_CONFIDENCE_THRESHOLD is None:
+            self.CLASSIFIER_CONFIDENCE_THRESHOLD = self.CONFIDENCE_THRESHOLD
 
     # Database
     DATABASE_URL: str = "sqlite:///data/domains.db"

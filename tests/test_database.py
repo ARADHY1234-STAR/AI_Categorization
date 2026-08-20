@@ -112,3 +112,31 @@ def test_delete_domain_by_fqdn(in_memory_db):
     assert repo.delete_by_fqdn("example-to-delete.com") is False
 
 
+def test_database_category_11_miscellaneous_save_and_retrieve(in_memory_db):
+    repo = DomainRepository(in_memory_db)
+    norm = normalize_domain("https://unknown-ambiguous-example.org")
+
+    saved = repo.save_classification(
+        norm=norm,
+        category="Miscellaneous",
+        confidence=0.62,
+        source=ClassificationSource.LLM_CATEGORIZER,
+        status="LOW_CONFIDENCE",
+        reason="Available metadata is insufficient to confidently classify the domain into categories 1-10.",
+        metadata_fetch_status="SUCCESS",
+        http_status=200,
+    )
+
+    assert saved.id is not None
+    assert saved.category_id == 11
+    assert saved.category_name == "Miscellaneous"
+    assert saved.status == "LOW_CONFIDENCE"
+    assert saved.confidence == 0.62
+
+    fetched = repo.get_by_fqdn("unknown-ambiguous-example.org")
+    assert fetched is not None
+    assert fetched.category_id == 11
+    assert fetched.category_name == "Miscellaneous"
+    assert fetched.status == "LOW_CONFIDENCE"
+
+

@@ -24,8 +24,8 @@ def test_locked_rules_registered():
     assert "TB8" in prompt_text
 
 
-def test_ten_categories_intact():
-    assert len(CATEGORIES_REGISTRY) == 10
+def test_eleven_categories_intact():
+    assert len(CATEGORIES_REGISTRY) == 11
     names = {meta.name.value for meta in CATEGORIES_REGISTRY.values()}
     expected = {
         "Communication",
@@ -38,5 +38,8 @@ def test_ten_categories_intact():
         "Shopping & E-commerce",
         "System Utilities & Security",
         "File Storage & Data Sharing",
+        "Miscellaneous",
     }
     assert names == expected
+    assert CATEGORIES_REGISTRY[11].name == CategoryEnum.MISCELLANEOUS
+    assert CATEGORIES_REGISTRY[11].id == 11

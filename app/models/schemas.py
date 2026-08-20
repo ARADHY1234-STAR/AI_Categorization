@@ -6,6 +6,7 @@ from app.models.category import ALLOWED_CATEGORY_NAMES, get_category_id_by_name
 
 class ClassificationStatus(str, Enum):
     CLASSIFIED = "CLASSIFIED"
+    LOW_CONFIDENCE = "LOW_CONFIDENCE"
     UNCLASSIFIED = "UNCLASSIFIED"
     UNKNOWN = "UNKNOWN"
     ERROR = "ERROR"
@@ -78,7 +79,7 @@ class LLMClassificationOutput(BaseModel):
         if v is None or v in ("No Category Found", "Unclassified", "UNCLASSIFIED", "null", "None", "", "N/A"):
             return None
         if v not in ALLOWED_CATEGORY_NAMES:
-            raise ValueError(f"Category '{v}' is not one of the 10 allowed categories: {ALLOWED_CATEGORY_NAMES}")
+            raise ValueError(f"Category '{v}' is not one of the allowed categories: {ALLOWED_CATEGORY_NAMES}")
         return v
 
     def model_post_init(self, __context: Any) -> None:

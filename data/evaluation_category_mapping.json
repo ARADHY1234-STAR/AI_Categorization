@@ -57,6 +57,10 @@
     "File Storage & Data Sharing": "File Storage & Data Sharing",
     "Cloud Storage": "File Storage & Data Sharing",
     "File Transfer": "File Storage & Data Sharing",
-    "Document Repository": "File Storage & Data Sharing"
+    "Document Repository": "File Storage & Data Sharing",
+
+    "Miscellaneous": "Miscellaneous",
+    "Other": "Miscellaneous",
+    "Unclassified": "Miscellaneous"
   }
 }

@@ -58,6 +58,7 @@ CATEGORY_COLORS = {
     "Shopping & E-commerce": "#f97316",
     "System Utilities & Security": "#06b6d4",
     "File Storage & Data Sharing": "#14b8a6",
+    "Miscellaneous": "#64748b",
 }
 
 CATEGORY_ICONS = {
@@ -71,6 +72,7 @@ CATEGORY_ICONS = {
     "Shopping & E-commerce": "🛍️",
     "System Utilities & Security": "🛡️",
     "File Storage & Data Sharing": "📁",
+    "Miscellaneous": "📦",
 }
 
 

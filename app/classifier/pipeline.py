@@ -13,6 +13,12 @@ from app.classifier.prompts import (
     build_layer2_user_prompt,
     build_system_prompt,
 )
+from app.models.category import (
+    CATEGORIES_REGISTRY,
+    get_category_id_by_name,
+    MISCELLANEOUS_CATEGORY_ID,
+    MISCELLANEOUS_CATEGORY_NAME,
+)
 from app.models.schemas import (
     ClassificationResponse,
     ClassificationSource,
@@ -26,12 +32,16 @@ from app.rules.overrides import BrandOverrideEngine
 
 logger = logging.getLogger(__name__)
 
+CATEGORIES_1_TO_10_NAMES = {
+    meta.name.value for cat_id, meta in CATEGORIES_REGISTRY.items() if cat_id != 11
+}
+
 
 class DomainClassificationPipeline:
     """Two-Layer hierarchical domain classification pipeline orchestrator.
 
     Architecture:
-    URL -> Normalizer -> DB Cache -> Brand Overrides -> Layer 1 HTTP Fetch -> Layer 2 LLM -> DB Persistence
+    URL -> Normalizer -> DB Cache -> Brand Overrides -> Layer 1 HTTP Fetch -> Layer 2 LLM -> Confidence Threshold Validation -> DB Persistence
     """
 
     def __init__(
@@ -47,6 +57,10 @@ class DomainClassificationPipeline:
         self.override_engine = (
             override_engine or BrandOverrideEngine(self.settings.BRAND_OVERRIDES_PATH)
         )
+
+    @property
+    def confidence_threshold(self) -> float:
+        return self.settings.CONFIDENCE_THRESHOLD
 
     async def classify(
         self,
@@ -108,8 +122,14 @@ class DomainClassificationPipeline:
                 return override_match
 
             # 4. LAYER 1: HTTP Metadata Fetcher (With redirect following & SSRF protection)
-            logger.info(f"Layer 1: Fetching HTTP metadata for '{norm.fqdn}' ({raw_input})...")
+            logger.info(f"[HTTP] Fetching metadata: {norm.fqdn}")
             fetch_result = await self.fetcher.fetch(raw_input)
+            http_log_status = (
+                fetch_result.http_status
+                if fetch_result.http_status is not None
+                else fetch_result.fetch_status.value
+            )
+            logger.info(f"[HTTP] Status: {http_log_status}")
 
             # If redirect crossed domains, compute post-redirect normalized domain
             if fetch_result.final_url and fetch_result.final_url != raw_input:
@@ -140,7 +160,7 @@ class DomainClassificationPipeline:
             system_prompt = build_system_prompt()
             user_prompt = build_layer2_user_prompt(norm, fetch_result)
 
-            logger.info(f"Layer 2: Invoking LLM Categorizer for '{norm.fqdn}'...")
+            logger.info(f"[LLM] Classifying: {norm.fqdn}")
             llm_output, metadata = await self.llm_client.generate_classification(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
@@ -167,115 +187,118 @@ class DomainClassificationPipeline:
                 or (fetch_result.metadata.body_sample and len(fetch_result.metadata.body_sample.strip()) > 10)
             )
 
+            threshold = self.confidence_threshold
+
+            # 6. Backend Authoritative Confidence Threshold & Categorization Logic
             if llm_output and llm_output.category:
-                # If domain is unresolvable / has no meaningful content and confidence is below threshold, treat as UNCLASSIFIED
-                if not has_meaningful_content and llm_output.confidence < self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD:
-                    logger.info(
-                        f"Domain '{norm.fqdn}' has no meaningful content and confidence {llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Returning UNCLASSIFIED (No Category Found)."
-                    )
-                    fallback_msg = (
-                        "The domain failed to respond (request timed out) and returned no identifiable content or metadata, making classification impossible."
-                        if fetch_result.fetch_status == FetchStatus.TIMEOUT
-                        else "The domain failed to resolve and returned no identifiable content or metadata, making classification impossible."
-                    )
-                    unclass_reason = llm_output.reason or fallback_msg
-                    return ClassificationResponse(
-                        original_url=raw_input,
-                        domain=norm.fqdn,
-                        subdomain=norm.normalized_subdomain,
-                        category="No Category Found",
-                        category_id=None,
-                        confidence=llm_output.confidence,
-                        status=ClassificationStatus.UNCLASSIFIED.value,
-                        source=ClassificationSource.LLM_CATEGORIZER.value,
-                        rule_applied=llm_output.rule_applied or "unclassifiable",
-                        reason=unclass_reason,
-                        enrichment_used=True,
-                        final_url=fetch_result.final_url,
-                        http_status=fetch_result.http_status,
-                        metadata_fetch_status=fetch_result.fetch_status.value,
-                        metadata_used=metadata_used_dict,
-                        model_name=metadata.get("model"),
-                    )
+                candidate_category = llm_output.category
+                candidate_conf = float(llm_output.confidence)
 
-                # Enforce confidence threshold: Low-confidence items need review and are NOT cached to database
-                if llm_output.confidence < self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD:
-                    logger.info(
-                        f"Layer 2 confidence {llm_output.confidence:.2f} < threshold {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}. Flagged as NEEDS_REVIEW (Not saved to DB)."
-                    )
-                    # If confidence is very low (< 0.50) without strong evidence, treat as unclassified
-                    is_very_low = llm_output.confidence < 0.50
-                    cat_res = "No Category Found" if is_very_low else llm_output.category
-                    cat_id_res = None if is_very_low else llm_output.category_id
-                    status_res = ClassificationStatus.UNCLASSIFIED.value if is_very_low else ClassificationStatus.NEEDS_REVIEW.value
+                logger.info(f"[LLM] Candidate: {candidate_category}")
+                logger.info(f"[LLM] Confidence: {candidate_conf:.2f}")
 
-                    return ClassificationResponse(
-                        original_url=raw_input,
-                        domain=norm.fqdn,
-                        subdomain=norm.normalized_subdomain,
-                        category=cat_res,
-                        category_id=cat_id_res,
-                        confidence=llm_output.confidence,
-                        status=status_res,
-                        source=ClassificationSource.LLM_CATEGORIZER.value,
-                        rule_applied=llm_output.rule_applied or "low_confidence_review",
-                        reason=llm_output.reason or f"Low confidence ({llm_output.confidence:.2f} < {self.settings.CLASSIFIER_CONFIDENCE_THRESHOLD}) requiring human review.",
-                        enrichment_used=True,
-                        final_url=fetch_result.final_url,
-                        http_status=fetch_result.http_status,
-                        metadata_fetch_status=fetch_result.fetch_status.value,
-                        metadata_used=metadata_used_dict,
-                        model_name=metadata.get("model"),
+                # Check if candidate is in Categories 1–10
+                if candidate_category in CATEGORIES_1_TO_10_NAMES:
+                    # If website had no meaningful content / failed to resolve, reject low/unsupported confidence
+                    if not has_meaningful_content and candidate_conf < threshold:
+                        logger.info(
+                            f"[CLASSIFIER] Insufficient metadata/content and confidence {candidate_conf:.2f} < {threshold:.2f}"
+                        )
+                        logger.info("[CLASSIFIER] Assigned Category 11: Miscellaneous")
+                        final_category = MISCELLANEOUS_CATEGORY_NAME
+                        final_cat_id = MISCELLANEOUS_CATEGORY_ID
+                        final_confidence = candidate_conf
+                        final_status = ClassificationStatus.UNCLASSIFIED.value
+                        final_rule = llm_output.rule_applied or "insufficient_metadata_fallback"
+                        default_fallback_msg = (
+                            "The domain failed to respond (request timed out) and returned no identifiable content or metadata, making classification into Categories 1-10 impossible."
+                            if fetch_result.fetch_status == FetchStatus.TIMEOUT
+                            else "The domain failed to resolve and returned no identifiable content or metadata, making classification into Categories 1-10 impossible."
+                        )
+                        final_reason = llm_output.reason or default_fallback_msg
+                    elif candidate_conf >= threshold:
+                        # ACCEPT Category 1-10
+                        final_cat_id = get_category_id_by_name(candidate_category) or llm_output.category_id
+                        logger.info(f"[CLASSIFIER] Accepted category {final_cat_id}")
+                        final_category = candidate_category
+                        final_confidence = candidate_conf
+                        final_status = ClassificationStatus.CLASSIFIED.value
+                        final_rule = llm_output.rule_applied or "general_taxonomy"
+                        final_reason = llm_output.reason or f"Confidently classified into '{candidate_category}'."
+                    else:
+                        # LOW CONFIDENCE (< threshold): Category 11 Miscellaneous
+                        logger.info(f"[CLASSIFIER] Confidence below {threshold:.2f}")
+                        logger.info("[CLASSIFIER] Assigned Category 11: Miscellaneous")
+                        final_category = MISCELLANEOUS_CATEGORY_NAME
+                        final_cat_id = MISCELLANEOUS_CATEGORY_ID
+                        final_confidence = candidate_conf
+                        final_status = ClassificationStatus.LOW_CONFIDENCE.value
+                        final_rule = llm_output.rule_applied or "confidence_threshold_fallback"
+                        final_reason = (
+                            llm_output.reason
+                            or f"Confidence {candidate_conf:.2f} is below threshold {threshold:.2f} for candidate '{candidate_category}'. Assigned to Miscellaneous."
+                        )
+                elif candidate_category == MISCELLANEOUS_CATEGORY_NAME:
+                    logger.info("[CLASSIFIER] Assigned Category 11: Miscellaneous")
+                    final_category = MISCELLANEOUS_CATEGORY_NAME
+                    final_cat_id = MISCELLANEOUS_CATEGORY_ID
+                    final_confidence = candidate_conf
+                    final_status = (
+                        llm_output.status.value
+                        if isinstance(llm_output.status, ClassificationStatus)
+                        else str(llm_output.status or ClassificationStatus.CLASSIFIED.value)
                     )
-
-                # High confidence (>= threshold): Persist to database cache
-                logger.info(
-                    f"Layer 2 classified '{norm.fqdn}' -> '{llm_output.category}' (confidence: {llm_output.confidence:.2f}, status: CLASSIFIED)"
+                    final_rule = llm_output.rule_applied or "miscellaneous_classification"
+                    final_reason = (
+                        llm_output.reason
+                        or "Available evidence is insufficient to confidently classify the domain into Categories 1–10."
+                    )
+                else:
+                    # Invalid category returned by LLM: Safe fallback to Category 11
+                    logger.warning(
+                        f"[CLASSIFIER] Invalid category '{candidate_category}' returned. Safe fallback to Category 11: Miscellaneous."
+                    )
+                    logger.info("[CLASSIFIER] Assigned Category 11: Miscellaneous")
+                    final_category = MISCELLANEOUS_CATEGORY_NAME
+                    final_cat_id = MISCELLANEOUS_CATEGORY_ID
+                    final_confidence = candidate_conf
+                    final_status = ClassificationStatus.UNCLASSIFIED.value
+                    final_rule = "invalid_category_fallback"
+                    final_reason = f"Invalid category '{candidate_category}' returned by LLM. Safe fallback to Miscellaneous."
+            else:
+                # LLM could not determine category / returned null / unresolvable / error
+                candidate_conf = float(llm_output.confidence) if llm_output else 0.0
+                logger.info("[CLASSIFIER] Assigned Category 11: Miscellaneous")
+                final_category = MISCELLANEOUS_CATEGORY_NAME
+                final_cat_id = MISCELLANEOUS_CATEGORY_ID
+                final_confidence = candidate_conf
+                final_status = ClassificationStatus.UNCLASSIFIED.value
+                final_rule = (llm_output.rule_applied if llm_output else None) or "unclassifiable"
+                default_msg = (
+                    "The domain failed to respond (request timed out) and returned no identifiable content or metadata, making classification into Categories 1-10 impossible."
+                    if fetch_result.fetch_status == FetchStatus.TIMEOUT
+                    else "The domain failed to resolve and returned no identifiable content or metadata, making classification into Categories 1-10 impossible."
                 )
-                record = repo.save_classification(
-                    norm=norm,
-                    category=llm_output.category,
-                    confidence=llm_output.confidence,
-                    source=ClassificationSource.LLM_CATEGORIZER,
-                    status=ClassificationStatus.CLASSIFIED.value,
-                    enrichment_used=True,
-                    original_url=raw_input,
-                    final_url=fetch_result.final_url,
-                    metadata_fetch_status=fetch_result.fetch_status.value,
-                    http_status=fetch_result.http_status,
-                    metadata_used=metadata_used_dict,
-                    model_name=metadata.get("model"),
-                    rule_applied=llm_output.rule_applied,
-                    reason=llm_output.reason,
-                )
-                return repo.to_response(record, original_url=raw_input)
+                final_reason = (llm_output.reason if (llm_output and llm_output.reason) else default_msg)
 
-            # Fallback / Unclassifiable (No category, unresolvable, or error) - Do NOT save to DB
-            logger.warning(f"Could not classify '{norm.fqdn}'. Returning UNCLASSIFIED without saving to DB.")
-            default_msg = (
-                "The domain failed to respond (request timed out) and returned no identifiable content or metadata, making classification impossible."
-                if fetch_result.fetch_status == FetchStatus.TIMEOUT
-                else "The domain failed to resolve and returned no identifiable content or metadata, making classification impossible."
-            )
-            fail_reason = (llm_output.reason if (llm_output and llm_output.reason) else default_msg)
-            return ClassificationResponse(
-                original_url=raw_input,
-                domain=norm.fqdn,
-                subdomain=norm.normalized_subdomain,
-                category="No Category Found",
-                category_id=None,
-                confidence=llm_output.confidence if llm_output else 0.0,
-                status=ClassificationStatus.UNCLASSIFIED.value,
-                source=ClassificationSource.LLM_CATEGORIZER.value,
-                rule_applied=llm_output.rule_applied if llm_output else "unclassifiable",
-                reason=fail_reason,
+            # Persist classification result to database cache
+            record = repo.save_classification(
+                norm=norm,
+                category=final_category,
+                confidence=final_confidence,
+                source=ClassificationSource.LLM_CATEGORIZER,
+                status=final_status,
                 enrichment_used=True,
+                original_url=raw_input,
                 final_url=fetch_result.final_url,
-                http_status=fetch_result.http_status,
                 metadata_fetch_status=fetch_result.fetch_status.value,
+                http_status=fetch_result.http_status,
                 metadata_used=metadata_used_dict,
                 model_name=metadata.get("model"),
+                rule_applied=final_rule,
+                reason=final_reason,
             )
+            return repo.to_response(record, original_url=raw_input)
 
         finally:
             if session_created and db_session is not None:

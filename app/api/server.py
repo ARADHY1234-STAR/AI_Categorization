@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Domain Categorization AI Service",
-    description="Internal backend service for classifying website domains into 10 fixed categories.",
+    description="Internal backend service for classifying website domains into 11 predefined categories.",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -101,7 +101,7 @@ def get_rules():
 
 @app.get("/categories", tags=["Categories"])
 def get_categories():
-    """List the 10 fixed categories."""
+    """List the 11 categories."""
     return [
         {
             "id": cat.id,

@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.database.connection import init_db
 from app.classifier.pipeline import DomainClassificationPipeline
+from app.models.category import ALLOWED_CATEGORY_NAMES
 
 logging.basicConfig(
     level=logging.INFO,
@@ -90,13 +91,9 @@ async def evaluate_csv(
 
         ai_category = classification.category if classification else None
 
-        # Map dataset category string to canonical 10 categories
+        # Map dataset category string to canonical 11 categories
         mapped_expected = category_mapping.get(raw_expected, raw_expected)
-        is_mapped = raw_expected in category_mapping or mapped_expected in [
-            "Communication", "Social Media", "Productivity & Office", "Development & IT",
-            "Business & Enterprise", "Research & Learning", "Entertainment & Media",
-            "Shopping & E-commerce", "System Utilities & Security", "File Storage & Data Sharing"
-        ]
+        is_mapped = raw_expected in category_mapping or mapped_expected in ALLOWED_CATEGORY_NAMES
 
         if not is_mapped:
             unmapped_cases += 1

@@ -49,14 +49,14 @@ class OpenRouterLLMClient:
     ) -> Tuple[Optional[LLMClassificationOutput], Dict[str, Any]]:
         """Call OpenRouter chat completions endpoint and return validated structured classification."""
         if not self.api_key:
-            logger.warning("OPENROUTER_API_KEY not configured. Falling back to NEEDS_REVIEW status.")
+            logger.warning("OPENROUTER_API_KEY not configured. Falling back to unclassified status.")
             return (
                 LLMClassificationOutput(
                     domain="unknown",
                     category=None,
                     category_id=None,
                     confidence=0.0,
-                    status=ClassificationStatus.NEEDS_REVIEW,
+                    status=ClassificationStatus.UNCLASSIFIED,
                     reason="OpenRouter API key is not configured.",
                 ),
                 {"error": "No API key configured"},

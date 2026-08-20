@@ -14,6 +14,7 @@ class CategoryEnum(str, Enum):
     SHOPPING_ECOMMERCE = "Shopping & E-commerce"
     SYSTEM_UTILITIES_SECURITY = "System Utilities & Security"
     FILE_STORAGE_DATA_SHARING = "File Storage & Data Sharing"
+    MISCELLANEOUS = "Miscellaneous"
 
 
 class CategoryMeta(BaseModel):
@@ -84,6 +85,12 @@ CATEGORIES_REGISTRY: Dict[int, CategoryMeta] = {
         description="Cloud storage, sync, document repositories, file transfer, shared drives, backup",
         examples_scope="Google Drive, OneDrive, Dropbox, WeTransfer, Box, SharePoint document libraries",
     ),
+    11: CategoryMeta(
+        id=11,
+        name=CategoryEnum.MISCELLANEOUS,
+        description="Websites/domains that cannot be confidently classified into Categories 1–10 based on the available metadata and classification rules.",
+        examples_scope="Unclassifiable, low confidence, ambiguous, or sparse websites lacking sufficient classification evidence",
+    ),
 }
 
 # Lookup dictionaries
@@ -96,6 +103,9 @@ CATEGORY_ID_TO_NAME: Dict[int, str] = {
 }
 
 ALLOWED_CATEGORY_NAMES: List[str] = [cat.value for cat in CategoryEnum]
+
+MISCELLANEOUS_CATEGORY_ID: int = 11
+MISCELLANEOUS_CATEGORY_NAME: str = CategoryEnum.MISCELLANEOUS.value
 
 
 def get_category_id_by_name(name: str) -> Optional[int]:

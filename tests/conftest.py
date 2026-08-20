@@ -22,6 +22,7 @@ def test_settings():
     return Settings(
         OPENROUTER_API_KEY="test-mock-key",
         OPENROUTER_MODEL="anthropic/claude-3.5-sonnet",
+        CONFIDENCE_THRESHOLD=0.80,
         CLASSIFIER_CONFIDENCE_THRESHOLD=0.80,
         DATABASE_URL="sqlite:///:memory:",
         BRAND_OVERRIDES_PATH="data/brand_overrides.json",
